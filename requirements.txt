@@ -2,4 +2,3 @@ flask
 requests
 moviepy
 imageio-ffmpeg
-gunicorn
