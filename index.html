@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TikTok Downloader</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #ece9e6, #ffffff);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 1rem;
+      color: #222;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 1rem;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .loading {
+      margin-top: 1rem;
+      display: none;
+      color: #555;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🎬 TikTok Downloader</h2>
+    <input id="url" type="text" placeholder="Masukkan URL TikTok…">
+    <select id="format">
+      <option value="mp4">🎥 MP4 (Video)</option>
+      <option value="mp3">🎵 MP3 (Audio)</option>
+    </select>
+    <button id="go">Download</button>
+    <div class="loading" id="loading">🚀 Mengunduh, tunggu sebentar...</div>
+  </div>
+
+  <script>
+    document.getElementById('go').onclick = () => {
+      const url = document.getElementById('url').value.trim();
+      const format = document.getElementById('format').value;
+      const loading = document.getElementById('loading');
+
+      if (!url) {
+        alert('❗ Masukkan URL TikTok terlebih dahulu!');
+        return;
+      }
+
+      loading.style.display = 'block';
+
+      // Gunakan form download dinamis (tanpa ganti halaman)
+      const downloadUrl = `/download?url=${encodeURIComponent(url)}&format=${format}`;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Sembunyikan loading setelah 6 detik (asumsi download mulai)
+      setTimeout(() => { loading.style.display = 'none'; }, 6000);
+    };
+  </script>
+</body>
+</html>
