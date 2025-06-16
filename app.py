@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, send_file, abort, send_from_directory
 import os
 import tempfile
 import requests
+from flask import Flask, render_template, request, send_file, abort, send_from_directory
 from moviepy import VideoFileClip
 from io import BytesIO
 
@@ -64,7 +64,7 @@ def remove_bg():
             'image': (image_file.filename, image_file.stream, image_file.mimetype)
         }
 
-        # ✅ URL Fix: pointing to Hugging Face Space
+        # 🔗 Koneksi ke Hugging Face Remover API
         resp = requests.post("https://DhaniKWP--rembg-api.hf.space/remove", files=files)
 
         if resp.status_code != 200:
