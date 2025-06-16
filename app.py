@@ -1,24 +1,17 @@
+from flask import Flask, render_template, request, send_file, abort, send_from_directory
 import os
-import re
 import tempfile
 import requests
-from flask import Flask, request, send_file, abort, send_from_directory
 from moviepy import VideoFileClip
-from rembg import remove
-from PIL import Image
 from io import BytesIO
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
-@app.route('/')
+@app.route("/")
 def index():
     return send_from_directory(directory=os.getcwd(), path='index.html')
 
-
-# ===============================
-# 🎬 TikTok Download (MP4 or MP3)
-# ===============================
-@app.route('/download')
+@app.route("/download")
 def download():
     url = request.args.get('url', '').strip()
     format = request.args.get('format', 'mp4')
@@ -34,7 +27,7 @@ def download():
         res_json = resp.json()
 
         if 'token' not in res_json or 'id' not in res_json:
-            return abort(500, "Gagal mendapatkan respons yang valid dari SnapTik API.")
+            return abort(500, "Gagal mendapatkan respons dari SnapTik API.")
 
         download_link = f"https://tikmate.app/download/{res_json['token']}/{res_json['id']}.mp4"
         video_data = requests.get(download_link).content
@@ -53,26 +46,12 @@ def download():
             clip = VideoFileClip(tmp_video.name)
             clip.audio.write_audiofile(tmp_audio_path)
             clip.close()
-            return send_file(
-                tmp_audio_path,
-                as_attachment=True,
-                download_name='tiktok_audio.mp3',
-                mimetype='audio/mpeg'
-            )
+            return send_file(tmp_audio_path, as_attachment=True, download_name='tiktok_audio.mp3', mimetype='audio/mpeg')
         except Exception as e:
             return abort(500, f"Gagal mengubah ke MP3: {e}")
 
-    return send_file(
-        tmp_video.name,
-        as_attachment=True,
-        download_name='tiktok_no_wm.mp4',
-        mimetype='video/mp4'
-    )
+    return send_file(tmp_video.name, as_attachment=True, download_name='tiktok_no_wm.mp4', mimetype='video/mp4')
 
-
-# ===============================
-# 🖼️ Remove Background from Image
-# ===============================
 @app.route('/remove-bg', methods=['POST'])
 def remove_bg():
     if 'image' not in request.files:
@@ -81,22 +60,21 @@ def remove_bg():
     image_file = request.files['image']
 
     try:
-        input_image = Image.open(image_file.stream).convert("RGBA")
-        output_image = remove(input_image)
+        files = {
+            'image': (image_file.filename, image_file.stream, image_file.mimetype)
+        }
 
-        tmp_output = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
-        output_image.save(tmp_output.name, format='PNG')
+        # ✅ URL Fix: pointing to Hugging Face Space
+        resp = requests.post("https://DhaniKWP--rembg-api.hf.space/remove", files=files)
 
-        return send_file(
-            tmp_output.name,
-            as_attachment=True,
-            download_name='no-bg.png',
-            mimetype='image/png'
-        )
+        if resp.status_code != 200:
+            return abort(500, "Gagal memproses gambar.")
+
+        return send_file(BytesIO(resp.content), mimetype="image/png", as_attachment=True, download_name="no-bg.png")
 
     except Exception as e:
-        return abort(500, f'Gagal menghapus latar belakang: {e}')
-
+        print("ERROR REMOVE BG:", e)
+        return abort(500, f"Gagal menghubungi remover API: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8003))
