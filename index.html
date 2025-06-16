@@ -3,116 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TikTok Downloader</title>
+  <title>Dhani Tools - TikTok & Background Remover</title>
+  <link rel="icon" href="images/no-bg.png">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      background: linear-gradient(to right, #f1f8ff, #ffffff);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      padding: 2rem 1rem;
     }
-
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #0d47a1;
+      font-size: 2.4rem;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+    }
     .box {
       background: #ffffff;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+      padding: 2rem 2rem 2.5rem;
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
       width: 100%;
       max-width: 460px;
-      text-align: center;
-      animation: fadeIn 0.5s ease-in-out;
+      transition: transform 0.2s ease;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .box:hover {
+      transform: translateY(-4px);
     }
-
     h2 {
-      margin-bottom: 1.2rem;
-      color: #222;
-      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      color: #1e293b;
+      font-size: 1.5rem;
+      text-align: center;
     }
-
-    input, select {
+    label {
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+      display: block;
+      color: #333;
+    }
+    input[type="text"], select, input[type="file"] {
       width: 100%;
-      padding: 0.9rem;
-      margin-bottom: 1.2rem;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
       font-size: 1rem;
       border: 1px solid #ccc;
-      border-radius: 8px;
-      outline: none;
-      transition: border 0.3s;
+      border-radius: 10px;
+      transition: 0.3s;
     }
-
     input:focus, select:focus {
-      border-color: #66afe9;
+      border-color: #4d90fe;
+      outline: none;
     }
-
     button {
       width: 100%;
-      padding: 1rem;
+      padding: 0.85rem;
       font-size: 1rem;
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
-
     button:hover {
       background-color: #0056b3;
     }
-
+    .btn-danger {
+      background-color: #dc3545;
+    }
+    .btn-danger:hover {
+      background-color: #b42a36;
+    }
     .loading {
       margin-top: 1rem;
       display: none;
       color: #444;
       font-size: 0.95rem;
+      text-align: center;
     }
-
+    .preview-container {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    .preview-container img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.04);
+    }
     .footer {
-      margin-top: 2rem;
-      font-size: 0.85rem;
-      color: #777;
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #007bff;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+    .progress-wrapper {
+      width: 100%;
+      background: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      gap: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <h2>🎬 TikTok Downloader</h2>
-    <input id="url" type="text" placeholder="Masukkan URL TikTok…">
-    <select id="format">
-      <option value="mp4">🎥 MP4 (Video)</option>
-      <option value="mp3">🎵 MP3 (Audio)</option>
-    </select>
-    <button id="go">Download</button>
-    <div class="loading" id="loading">🚀 Mengunduh, tunggu sebentar...</div>
+  <h1>🛠️ Dhani Tools</h1>
+
+  <div class="container">
+    <!-- TikTok Downloader -->
+    <div class="box">
+      <h2>🎬 TikTok Downloader</h2>
+      <label for="url">URL TikTok</label>
+      <input id="url" type="text" placeholder="https://vt.tiktok.com/...">
+      <label for="format">Pilih Format</label>
+      <select id="format">
+        <option value="mp4">🎥 MP4 (Video)</option>
+        <option value="mp3">🎵 MP3 (Audio)</option>
+      </select>
+      <button id="go">Download</button>
+      <div class="loading" id="loading">🚀 Mengunduh, tunggu sebentar...</div>
+    </div>
+
+    <!-- Remove Background -->
+    <div class="box">
+      <h2>🖼️ Remove Background</h2>
+      <label for="imageInput">Unggah Gambar</label>
+      <input type="file" id="imageInput" accept="image/*" />
+      <div class="preview-container">
+        <img id="previewInput" style="display:none;" />
+        <img id="outputImage" style="display:none;" />
+        <div class="actions" id="imageActions" style="display:none;">
+          <button class="btn-danger" id="clearBtn">🗑️ Hapus</button>
+        </div>
+      </div>
+      <button id="removeBtn">Hapus Background</button>
+      <div class="loading" id="loading2">
+        ⏳ Memproses gambar...
+        <div class="progress-wrapper">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
-    Made with ❤️ by <strong>Dhani</strong>
+    Made with ❤️ by <strong>Dhani</strong><br>
+    <a href="https://github.com/DhaniKWP" target="_blank" style="color: #007bff; text-decoration: none; font-weight: bold;">
+      📬 Contact Me on GitHub
+    </a>
   </div>
 
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
+    // TikTok Downloader
     document.getElementById('go').onclick = () => {
       const url = document.getElementById('url').value.trim();
       const format = document.getElementById('format').value;
       const loading = document.getElementById('loading');
 
       if (!url) {
-        alert('❗ Masukkan URL TikTok terlebih dahulu!');
+        Swal.fire({
+          icon: 'warning',
+          title: 'Oops!',
+          text: 'Masukkan URL TikTok terlebih dahulu.'
+        });
         return;
       }
 
@@ -127,6 +213,115 @@
       document.body.removeChild(link);
 
       setTimeout(() => { loading.style.display = 'none'; }, 6000);
+    };
+
+    // Preview & Clear
+    document.getElementById('imageInput').onchange = (e) => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('previewInput');
+      const output = document.getElementById('outputImage');
+      const actions = document.getElementById('imageActions');
+
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        output.style.display = 'none';
+        actions.style.display = 'flex';
+      }
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+      document.getElementById('imageInput').value = "";
+      document.getElementById('previewInput').style.display = 'none';
+      document.getElementById('outputImage').style.display = 'none';
+      document.getElementById('imageActions').style.display = 'none';
+      document.getElementById('progressBar').style.width = '0%';
+    };
+
+    // Remove Background
+    document.getElementById('removeBtn').onclick = async () => {
+      const input = document.getElementById('imageInput');
+      const loading = document.getElementById('loading2');
+      const progressBar = document.getElementById('progressBar');
+      const previewOutput = document.getElementById('outputImage');
+
+      if (!input.files.length) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Gambar belum dipilih!',
+          text: 'Silakan unggah gambar terlebih dahulu.'
+        });
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', input.files[0]);
+      loading.style.display = 'block';
+      progressBar.style.width = '0%';
+
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/remove-bg', true);
+        xhr.responseType = 'blob';
+
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+            progressBar.style.width = `${percent}%`;
+          }
+        };
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            const blobUrl = URL.createObjectURL(xhr.response);
+            previewOutput.src = blobUrl;
+            previewOutput.style.display = 'block';
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'no-bg.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            progressBar.style.width = '100%';
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Sukses!',
+              text: 'Background berhasil dihapus.'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Gagal!',
+              text: 'Gagal memproses gambar.'
+            });
+            progressBar.style.width = '0%';
+          }
+          loading.style.display = 'none';
+        };
+
+        xhr.onerror = function () {
+          Swal.fire({
+            icon: 'error',
+            title: 'Terjadi kesalahan!',
+            text: 'Gagal menghubungi server.'
+          });
+          loading.style.display = 'none';
+          progressBar.style.width = '0%';
+        };
+
+        xhr.send(formData);
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan!',
+          text: 'Terjadi kesalahan saat menghapus background.'
+        });
+        loading.style.display = 'none';
+        progressBar.style.width = '0%';
+      }
     };
   </script>
 </body>
