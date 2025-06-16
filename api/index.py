@@ -67,7 +67,3 @@ def download():
         download_name='tiktok_no_wm.mp4',
         mimetype='video/mp4'
     )
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8003))
-    app.run(host="0.0.0.0", port=port)
