@@ -5,58 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TikTok Downloader</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #ece9e6, #ffffff);
-      height: 100vh;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
     }
+
     .box {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      background: #ffffff;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 450px;
+      max-width: 460px;
       text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     h2 {
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
       color: #222;
+      font-size: 1.6rem;
     }
+
     input, select {
       width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
+      padding: 0.9rem;
+      margin-bottom: 1.2rem;
       font-size: 1rem;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
+      outline: none;
+      transition: border 0.3s;
     }
+
+    input:focus, select:focus {
+      border-color: #66afe9;
+    }
+
     button {
       width: 100%;
-      padding: 0.9rem;
+      padding: 1rem;
       font-size: 1rem;
-      background-color: #28a745;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
+
     button:hover {
-      background-color: #218838;
+      background-color: #0056b3;
     }
+
     .loading {
       margin-top: 1rem;
       display: none;
-      color: #555;
+      color: #444;
       font-size: 0.95rem;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #777;
     }
   </style>
 </head>
 <body>
+
   <div class="box">
     <h2>🎬 TikTok Downloader</h2>
     <input id="url" type="text" placeholder="Masukkan URL TikTok…">
@@ -66,6 +99,10 @@
     </select>
     <button id="go">Download</button>
     <div class="loading" id="loading">🚀 Mengunduh, tunggu sebentar...</div>
+  </div>
+
+  <div class="footer">
+    Made with ❤️ by <strong>Dhani</strong>
   </div>
 
   <script>
@@ -81,7 +118,6 @@
 
       loading.style.display = 'block';
 
-      // Gunakan form download dinamis (tanpa ganti halaman)
       const downloadUrl = `/download?url=${encodeURIComponent(url)}&format=${format}`;
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -90,7 +126,6 @@
       link.click();
       document.body.removeChild(link);
 
-      // Sembunyikan loading setelah 6 detik (asumsi download mulai)
       setTimeout(() => { loading.style.display = 'none'; }, 6000);
     };
   </script>
