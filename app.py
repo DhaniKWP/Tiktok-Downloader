@@ -1,9 +1,8 @@
 import os
 import tempfile
 import requests
-from flask import Flask, render_template, request, send_file, abort, send_from_directory
+from flask import Flask, request, send_file, abort, send_from_directory
 from moviepy import VideoFileClip
-from io import BytesIO
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -51,30 +50,6 @@ def download():
             return abort(500, f"Gagal mengubah ke MP3: {e}")
 
     return send_file(tmp_video.name, as_attachment=True, download_name='tiktok_no_wm.mp4', mimetype='video/mp4')
-
-@app.route('/remove-bg', methods=['POST'])
-def remove_bg():
-    if 'image' not in request.files:
-        return abort(400, 'File gambar tidak ditemukan.')
-
-    image_file = request.files['image']
-
-    try:
-        files = {
-            'image': (image_file.filename, image_file.stream, image_file.mimetype)
-        }
-
-        # 🔗 Koneksi ke Hugging Face Remover API
-        resp = requests.post("https://DhaniKWP--rembg-api.hf.space/remove", files=files)
-
-        if resp.status_code != 200:
-            return abort(500, "Gagal memproses gambar.")
-
-        return send_file(BytesIO(resp.content), mimetype="image/png", as_attachment=True, download_name="no-bg.png")
-
-    except Exception as e:
-        print("ERROR REMOVE BG:", e)
-        return abort(500, f"Gagal menghubungi remover API: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8003))
