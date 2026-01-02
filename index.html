@@ -129,36 +129,59 @@
     </a>
   </footer>
 
-  <!-- Script -->
   <script>
-    document.getElementById('go').onclick = () => {
-      const url = document.getElementById('url').value.trim();
-      const format = document.getElementById('format').value;
-      const loading = document.getElementById('loading');
+  document.getElementById('go').onclick = async () => {
+    const url = document.getElementById('url').value.trim();
+    const format = document.getElementById('format').value;
+    const loading = document.getElementById('loading');
 
-      if (!url) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Oops!',
-          text: 'Masukkan URL TikTok terlebih dahulu.',
-          background: '#0f0f1a',
-          color: '#e5e7eb'
-        });
-        return;
+    if (!url) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Oops!',
+        text: 'Masukkan URL TikTok terlebih dahulu.',
+        background: '#0f0f1a',
+        color: '#e5e7eb'
+      });
+      return;
+    }
+
+    loading.classList.remove('hidden');
+
+    try {
+      if (format === 'mp4') {
+        const res = await fetch(`/download?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+
+        if (!data.download_url) {
+          throw new Error('Link download tidak ditemukan');
+        }
+
+        const a = document.createElement('a');
+        a.href = data.download_url;
+        a.download = 'tiktok_video_no_wm.mp4'; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+      } else {
+        // 🎵 MP3 → backend kirim file
+        window.location.href =
+          `/download?url=${encodeURIComponent(url)}&format=mp3`;
       }
-
-      loading.classList.remove('hidden');
-
-      const downloadUrl = `/download?url=${encodeURIComponent(url)}&format=${format}`;
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => loading.classList.add('hidden'), 6000);
-    };
+      
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal',
+        text: err.message,
+        background: '#0f0f1a',
+        color: '#e5e7eb'
+      });
+    } finally {
+      setTimeout(() => loading.classList.add('hidden'), 3000);
+    }
+  };
   </script>
-
 </body>
 </html>

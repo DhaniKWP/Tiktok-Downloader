@@ -1,55 +1,135 @@
 import os
 import tempfile
 import requests
-from flask import Flask, request, send_file, abort, send_from_directory
+from flask import (Flask, request, abort, jsonify, send_file, send_from_directory, Response)
 from moviepy import VideoFileClip
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
 @app.route("/")
 def index():
-    return send_from_directory(directory=os.getcwd(), path='index.html')
+    return send_from_directory(os.getcwd(), "index.html")
+
+def get_video_tikwm(tiktok_url):
+    r = requests.post(
+        "https://tikwm.com/api/",
+        data={"url": tiktok_url, "hd": 1},
+        headers={"User-Agent": "Mozilla/5.0"},
+        timeout=20
+    )
+    r.raise_for_status()
+    data = r.json()
+
+    if not data.get("data") or not data["data"].get("play"):
+        raise Exception("TikWM gagal")
+
+    return {
+        "title": data["data"].get("title", "tiktok_video"),
+        "video_url": data["data"]["play"]
+    }
+
+def get_video_ssstik(tiktok_url):
+    from bs4 import BeautifulSoup
+
+    session = requests.Session()
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://ssstik.io/"
+    }
+
+    session.get("https://ssstik.io/", headers=headers, timeout=10)
+
+    r = session.post(
+        "https://ssstik.io/abc?url=dl",
+        data={"id": tiktok_url},
+        headers=headers,
+        timeout=20
+    )
+
+    soup = BeautifulSoup(r.text, "html.parser")
+    a = soup.find("a", href=True, string=lambda x: x and "Download" in x)
+
+    if not a:
+        raise Exception("SSSTIK gagal")
+
+    return {
+        "title": "tiktok_video",
+        "video_url": a["href"]
+    }
+
+@app.route("/download-file")
+def download_file():
+    video_url = request.args.get("video_url")
+
+    if not video_url:
+        abort(400, "video_url required")
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.tiktok.com/"
+    }
+
+    r = requests.get(video_url, headers=headers, stream=True, timeout=30)
+
+    def stream():
+        for chunk in r.iter_content(8192):
+            if chunk:
+                yield chunk
+
+    return Response(
+        stream(),
+        headers={
+            "Content-Disposition": "attachment; filename=tiktok_video.mp4",
+            "Content-Type": "application/octet-stream"
+        }
+    )
 
 @app.route("/download")
 def download():
-    url = request.args.get('url', '').strip()
-    format = request.args.get('format', 'mp4')
+    url = request.args.get("url", "").strip()
+    format = request.args.get("format", "mp4")
 
     if not url:
-        return abort(400, 'URL tidak boleh kosong.')
+        abort(400, "URL tidak boleh kosong")
 
     try:
-        video_url = url.split("?")[0]
-        api_url = "https://api.tikmate.app/api/lookup"
-        resp = requests.post(api_url, data={"url": video_url}, headers={"User-Agent": "Mozilla/5.0"})
-        resp.raise_for_status()
-        res_json = resp.json()
+        try:
+            result = get_video_tikwm(url)
+        except:
+            result = get_video_ssstik(url)
 
-        if 'token' not in res_json or 'id' not in res_json:
-            return abort(500, "Gagal mendapatkan respons dari SnapTik API.")
+        video_url = result["video_url"]
 
-        download_link = f"https://tikmate.app/download/{res_json['token']}/{res_json['id']}.mp4"
-        video_data = requests.get(download_link).content
+        if format == "mp4":
+            return jsonify({
+                "status": "ok",
+                "title": result["title"],
+                "download_url": f"/download-file?video_url={video_url}"
+            })
+
+        tmp_mp4 = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        r = requests.get(video_url, stream=True, timeout=30)
+
+        for chunk in r.iter_content(8192):
+            tmp_mp4.write(chunk)
+
+        tmp_mp4.close()
+
+        tmp_mp3 = tmp_mp4.name.replace(".mp4", ".mp3")
+
+        clip = VideoFileClip(tmp_mp4.name)
+        clip.audio.write_audiofile(tmp_mp3, logger=None)
+        clip.close()
+
+        return send_file(
+            tmp_mp3,
+            as_attachment=True,
+            download_name="tiktok_audio.mp3",
+            mimetype="audio/mpeg"
+        )
 
     except Exception as e:
-        return abort(500, f"Gagal mengambil video: {e}")
-
-    tmp_video = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-    tmp_video.write(video_data)
-    tmp_video.flush()
-    tmp_video.close()
-
-    if format == 'mp3':
-        tmp_audio_path = tmp_video.name.replace('.mp4', '.mp3')
-        try:
-            clip = VideoFileClip(tmp_video.name)
-            clip.audio.write_audiofile(tmp_audio_path)
-            clip.close()
-            return send_file(tmp_audio_path, as_attachment=True, download_name='tiktok_audio.mp3', mimetype='audio/mpeg')
-        except Exception as e:
-            return abort(500, f"Gagal mengubah ke MP3: {e}")
-
-    return send_file(tmp_video.name, as_attachment=True, download_name='tiktok_no_wm.mp4', mimetype='video/mp4')
+        abort(500, f"Gagal memproses video: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8003))
