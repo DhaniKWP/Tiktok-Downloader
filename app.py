@@ -79,7 +79,7 @@ def download_file():
     return Response(
         stream(),
         headers={
-            "Content-Disposition": "attachment; filename=tiktok_video.mp4",
+            "Content-Disposition": "attachment; filename=tiktok_video_no_wm.mp4",
             "Content-Type": "application/octet-stream"
         }
     )
