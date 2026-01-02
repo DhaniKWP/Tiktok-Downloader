@@ -24,7 +24,7 @@ def get_video_tikwm(tiktok_url):
         raise Exception("TikWM gagal")
 
     return {
-        "title": data["data"].get("title", "tiktok_video"),
+        "title": data["data"].get("title", "tiktok_video_no_wm"),
         "video_url": data["data"]["play"]
     }
 
@@ -53,7 +53,7 @@ def get_video_ssstik(tiktok_url):
         raise Exception("SSSTIK gagal")
 
     return {
-        "title": "tiktok_video",
+        "title": "tiktok_video_no_wm",
         "video_url": a["href"]
     }
 
